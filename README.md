@@ -4,10 +4,6 @@ Real-time, gesture-driven augmented reality for your webcam. Open your palm for 
 
 Built with Python, OpenCV, MediaPipe and NumPy. No game engine, no GPU required.
 
-<!-- Add a demo GIF here: record one with `python main.py --record docs/demo.mp4`, convert it to a GIF, and uncomment:
-![Demo](docs/demo.gif)
--->
-
 ## Effects
 
 | Key | Effect | Trigger | What you get |
@@ -21,17 +17,6 @@ Both hands are tracked at the same time, and each one animates independently.
 ## Quick start
 
 You need Python 3.9 or newer (3.10 to 3.12 are the safest choices for MediaPipe) and a webcam.
-
-```bash
-git clone https://github.com/YOUR-USERNAME/ar-magic-hands.git
-cd ar-magic-hands
-
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-
-pip install -r requirements.txt
-python main.py
-```
 
 On the first run the hand tracking model (a few MB) is downloaded automatically into `models/`. After that it works offline.
 
@@ -127,10 +112,6 @@ ar-magic-hands/
 
 The tests use synthetic hands, so they need no camera and no MediaPipe.
 
-```bash
-pip install -r requirements-dev.txt
-python -m pytest
-```
 
 They cover gesture detection at different rotations and sizes, the particle engine, drawing helpers, tracker smoothing and slot assignment, every effect, and the app's per-frame pipeline. GitHub Actions runs them on every push.
 
@@ -154,7 +135,7 @@ They cover gesture detection at different rotations and sizes, the particle engi
 
 ## License
 
-[MIT](LICENSE). Replace "Your Name" in the licence with your own name.
+[MIT](LICENSE). 
 
 ## Acknowledgements
 
