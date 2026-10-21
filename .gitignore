@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Downloaded MediaPipe model (fetched automatically on first run)
+models/
+
+# Output from the app
+screenshots/
+recordings/
+*.mp4
+*.avi
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
