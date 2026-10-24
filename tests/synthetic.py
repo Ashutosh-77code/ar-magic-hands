@@ -35,7 +35,15 @@ _FIST[2], _FIST[3], _FIST[4] = (-0.55, 0.45), (-0.45, 0.62), (-0.30, 0.72)
 _PINCH = list(_OPEN)
 _PINCH[2], _PINCH[3], _PINCH[4] = (-0.60, 0.85), (-0.50, 1.40), (-0.44, 1.97)
 
-POSES = {"open": _OPEN, "fist": _FIST, "pinch": _PINCH}
+# Point: a fist with only the index finger stretched out.
+_POINT = list(_FIST)
+_POINT[5:9] = _OPEN[5:9]
+
+# Peace sign: index and middle fingers stretched out.
+_PEACE = list(_POINT)
+_PEACE[9:13] = _OPEN[9:13]
+
+POSES = {"open": _OPEN, "fist": _FIST, "pinch": _PINCH, "point": _POINT, "peace": _PEACE}
 
 
 def make_hand(pose: str = "open", center=(640.0, 460.0), scale: float = 150.0,

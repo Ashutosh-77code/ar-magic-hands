@@ -76,11 +76,15 @@ def draw_hud(img: np.ndarray, effect_name: str, hint: str, fps: float, hands: Se
 
     # ---- Mode chips (bottom left) ------------------------------------
     x = pad
-    y0 = h - pad - int(34 * s)
+    chip_h = int(34 * s)
+    y0 = h - pad - chip_h
     for i, label in enumerate(mode_labels):
         text = f"{i + 1}  {label}"
         tw, th = cv2.getTextSize(text, FONT, 0.55 * s, 1)[0]
         x1 = x + tw + int(24 * s)
+        if x1 > w - pad and x > pad:          # no room left: continue on a row above
+            x, y0 = pad, y0 - chip_h - int(6 * s)
+            x1 = x + tw + int(24 * s)
         active = i == mode_index
         _panel(img, x, y0, x1, y0 + int(34 * s), 0.75 if active else 0.5)
         if active:
@@ -97,10 +101,14 @@ def draw_hud(img: np.ndarray, effect_name: str, hint: str, fps: float, hands: Se
             "1   Iron Man repulsor      (open palm, hold to charge)",
             "2   Doctor Strange ring    (pinch thumb + index, tilt to spin)",
             "3   Elemental hands        (press again: Fire / Lightning)",
-            "S   save screenshot        D   show hand skeleton",
-            "H   toggle this help       Q / ESC   quit",
+            "4   Neon painter           (point to draw, open palm 1 s to clear)",
+            "5   Rainbow trails         (wave your fingers)",
+            "6   Energy ball            (two hands; snap apart to blast)",
+            "7   Galaxy                 (open: galaxy, fist: black hole)",
+            "V sign for 1 s: photo with countdown",
+            "S   screenshot    D   hand skeleton    H   help    Q / ESC   quit",
         ]
-        bw, bh = int(640 * s), int((len(lines) + 1) * line)
+        bw, bh = int(660 * s), int((len(lines) + 1) * line)
         x0, y0 = (w - bw) // 2, (h - bh) // 2
         _panel(img, x0, y0, x0 + bw, y0 + bh, 0.75)
         for i, text in enumerate(lines):

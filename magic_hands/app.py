@@ -17,11 +17,12 @@ from magic_hands import __version__, config
 from magic_hands.compositor import composite
 from magic_hands.effects import Effect, create_effects
 from magic_hands.hand_tracker import Hand, HandTracker
+from magic_hands.snapshot import GestureSnapshot
 from magic_hands.ui import draw_hud, draw_skeleton
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 WINDOW_NAME = "AR Magic Hands"
-MODE_LABELS = ["Iron Man", "Sling Ring", "Elemental"]
+MODE_LABELS = ["Iron Man", "Sling Ring", "Elemental", "Neon Paint", "Trails", "Energy Ball", "Galaxy"]
 
 CAMERA_BACKENDS = {
     "auto": cv2.CAP_ANY,
@@ -47,6 +48,7 @@ class Settings:
     mode: int = 1
     record: Optional[Path] = None
     backend: str = "auto"
+    snapshot: bool = True   # peace-sign photo booth
 
 
 class MagicHandsApp:
@@ -68,6 +70,7 @@ class MagicHandsApp:
         self.show_skeleton = False
         self.fps = 0.0
         self.hands: Sequence[Hand] = []
+        self.snapshot = GestureSnapshot() if settings.snapshot else None
         self._light: Optional[np.ndarray] = None
         self._screenshot_requested = False
 
@@ -104,6 +107,8 @@ class MagicHandsApp:
     def process_frame(self, frame: np.ndarray, dt: float) -> np.ndarray:
         """Track hands, run the active effect, and return the finished frame (no HUD)."""
         self.hands = self.tracker.process(frame)
+        if self.snapshot is not None and self.snapshot.update(self.hands, dt):
+            self._screenshot_requested = True   # the V-sign countdown finished
 
         h, w = frame.shape[:2]
         if self._light is None or self._light.shape != frame.shape:
@@ -155,6 +160,8 @@ class MagicHandsApp:
                     draw_skeleton(out, self.hands)
                 draw_hud(out, self.effect.name, self.effect.hint, self.fps, self.hands, self.mode,
                          MODE_LABELS[:len(self.effects)], self.show_help, writer is not None)
+                if self.snapshot is not None:
+                    self.snapshot.draw(out)
                 cv2.imshow(WINDOW_NAME, out)
 
                 key = cv2.waitKey(1) & 0xFF
@@ -216,6 +223,8 @@ def window_closed() -> bool:
 def print_controls() -> None:
     print(f"AR Magic Hands v{__version__}")
     print("  1 Iron Man   2 Sling Ring   3 Elemental (press again: Fire/Lightning)")
+    print("  4 Neon Painter   5 Rainbow Trails   6 Energy Ball   7 Galaxy")
+    print("  Hold a peace sign (V) for 1 s to take a photo with a countdown")
     print("  H help   D skeleton   S screenshot   Q or ESC quit")
 
 
@@ -230,15 +239,17 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> Settings:
                    help="frames are shrunk to this width for hand detection (lower = faster)")
     p.add_argument("--smoothing", type=float, default=config.LANDMARK_SMOOTHING,
                    help="landmark smoothing 0 (none) to 0.9 (heavy)")
-    p.add_argument("--mode", type=int, default=1, choices=(1, 2, 3), help="starting effect")
+    p.add_argument("--mode", type=int, default=1, choices=tuple(range(1, 8)), help="starting effect (1-7)")
     p.add_argument("--model", type=Path, help="path to hand_landmarker.task (downloaded automatically if omitted)")
     p.add_argument("--assets", type=Path, default=PROJECT_ROOT / "assets", help="folder with mandala.png / repulsor.png")
     p.add_argument("--record", type=Path, help="record the output to this .mp4 file")
     p.add_argument("--backend", choices=sorted(CAMERA_BACKENDS), default="auto", help="camera backend")
+    p.add_argument("--no-snapshot", action="store_true", help="turn off the peace-sign photo booth")
     a = p.parse_args(argv)
     return Settings(camera=a.camera, width=a.width, height=a.height, mirror=not a.no_mirror,
                     max_hands=a.max_hands, process_width=a.process_width, smoothing=a.smoothing,
-                    model=a.model, assets=a.assets, mode=a.mode, record=a.record, backend=a.backend)
+                    model=a.model, assets=a.assets, mode=a.mode, record=a.record, backend=a.backend,
+                    snapshot=not a.no_snapshot)
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:

@@ -1,6 +1,6 @@
 # AR Magic Hands ✋✨
 
-Real-time, gesture-driven augmented reality for your webcam. Open your palm for an **Iron Man repulsor**, pinch to open a **Doctor Strange sling ring**, or set your hands on **fire** or crackle with **lightning**.
+Real-time, gesture-driven augmented reality for your webcam. Open your palm for an **Iron Man repulsor**, pinch to open a **Doctor Strange sling ring**, set your hands on **fire**, **paint with neon** in the air, charge an **energy ball** between your palms, or spin up a **galaxy** that collapses into a black hole.
 
 Built with Python, OpenCV, MediaPipe and NumPy. No game engine, no GPU required.
 
@@ -15,6 +15,12 @@ Built with Python, OpenCV, MediaPipe and NumPy. No game engine, no GPU required.
 | `1` | **Iron Man Repulsor** | Open palm | A pulsing blue-white repulsor at your palm centre. Its size follows your distance from the camera. Hold the pose and it **charges**: brighter glow, energy rushing inward, a charge meter, then shockwave pulses. |
 | `2` | **Doctor Strange Sling Ring** | Pinch (thumb + index) | Two counter-rotating mandalas open at the pinch point and throw off orange sparks. **Tilt your hand** to change the spin speed or reverse it. |
 | `3` | **Elemental Hands** | Always on | **Fire:** flames hug the hand skeleton and rise, with flame particles from every fingertip. **Lightning:** jagged bolts run along every bone, with random branches and arcs between fingertips. Press `3` again to switch between them. |
+
+| `4` | **Neon Painter** | Point with one finger | Paint glowing neon lines in the air. The colour flows along the stroke. Hold an open palm for 1 s (or press `4` again) to clear. |
+| `5` | **Rainbow Trails** | Always on | Every fingertip leaves a fading rainbow ribbon. |
+| `6` | **Energy Ball** | Two hands, palms close | A Kamehameha-style ball forms between your palms. Pull your hands apart to grow it, hold to charge it, and **snap them apart to blast**. |
+| `7` | **Galaxy** | Open palm / fist | Open palm: a spinning spiral galaxy. Make a **fist**: it collapses into a black hole. **Open again: supernova.** |
+| V sign | **Photo booth** | Hold a peace sign for 1 s | A 3-2-1 countdown, then a flash and a saved photo (without the HUD). Turn it off with `--no-snapshot`. |
 
 Both hands are tracked at the same time, and each one animates independently.
 
@@ -39,7 +45,7 @@ On the first run the hand tracking model (a few MB) is downloaded automatically 
 
 | Key | Action |
 |---|---|
-| `1` `2` `3` | Choose an effect (press `3` again for Fire / Lightning) |
+| `1` to `7` | Choose an effect (press `3` again for Fire / Lightning, `4` again to clear the painting) |
 | `H` | Show or hide the help overlay |
 | `D` | Show the tracked hand skeleton (debug view) |
 | `S` | Save a screenshot to `screenshots/` (without the HUD) |
@@ -48,7 +54,8 @@ On the first run the hand tracking model (a few MB) is downloaded automatically 
 ### Command line options
 
 ```bash
-python main.py --mode 3                 # start with the elemental effect
+python main.py --mode 4                 # start with the neon painter
+python main.py --no-snapshot            # turn off the peace-sign photo booth
 python main.py --camera 1               # use a different camera
 python main.py --width 640 --height 480 # lower resolution = higher FPS
 python main.py --record docs/demo.mp4   # record the output (no HUD)
@@ -95,7 +102,7 @@ If a file is missing, the effect falls back to shapes drawn with OpenCV. Run `py
 
 Colours, speeds and thresholds are all in [`magic_hands/config.py`](magic_hands/config.py): charge time, ring spin speed, pinch sensitivity, fire height, lightning density, smoothing and more.
 
-To add an effect, subclass `Effect` in `magic_hands/effects/`, implement `update` and `draw`, and add it to `create_effects()`.
+To add an effect, subclass `Effect` in `magic_hands/effects/`, implement `update` and `draw`, and append it to `create_effects()`. It gets the next number key automatically (add a label to `MODE_LABELS` in `app.py` for the on-screen chip).
 
 ## Project structure
 
@@ -111,13 +118,20 @@ ar-magic-hands/
 │   ├── compositor.py        # additive blending + bloom
 │   ├── procedural.py        # built-in mandala / repulsor artwork
 │   ├── ui.py                # HUD, help overlay, debug skeleton
+│   ├── gestures.py          # pointing and peace-sign detection
+│   ├── snapshot.py          # peace-sign photo booth with countdown
+│   ├── colors.py            # hue -> BGR helper for rainbow effects
 │   ├── config.py            # all tunable constants
 │   ├── landmarks.py         # MediaPipe landmark indices
 │   └── effects/
 │       ├── base.py          # Effect interface
 │       ├── repulsor.py      # Iron Man
 │       ├── sling_ring.py    # Doctor Strange
-│       └── elemental.py     # Fire + Lightning
+│       ├── elemental.py     # Fire + Lightning
+│       ├── neon_painter.py  # air painting
+│       ├── rainbow_trails.py
+│       ├── energy_ball.py   # two-hand Kamehameha
+│       └── galaxy.py        # galaxy / black hole / supernova
 ├── tests/                   # unit tests (synthetic hands, no camera needed)
 ├── scripts/generate_assets.py
 └── assets/                  # optional PNGs
@@ -143,6 +157,7 @@ They cover gesture detection at different rotations and sizes, the particle engi
 | `pip install mediapipe` fails | MediaPipe publishes wheels only for certain Python versions. Use a 3.10 to 3.12 virtual environment. |
 | Low FPS | Use `--width 640 --height 480`, lower `--process-width`, or close other heavy programs. Good, even lighting also helps tracking. |
 | Effects appear on the wrong hand side | You probably used `--no-mirror`. The default mirrored view acts like a mirror. |
+| Neon Painter will not draw | Curl your middle, ring and pinky fingers and point with the index finger only. A stroke starts after a split second of pointing. |
 | Pinch is hard to trigger | Keep at least one of your middle, ring or pinky fingers extended, and touch thumb tip to index tip. Tweak `PINCH_ON` in `config.py`. |
 
 ## Roadmap ideas
